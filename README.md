@@ -1,17 +1,17 @@
 # Private Assistant (Week 1 Progress)
 
-这是你当前已经跑通的最小 RAG 系统（本地文档版）：
+This repository contains your current working minimum RAG system (local document version):
 
-- 文档读取：TXT / MD / PDF / DOCX
-- 文本切块：chunk + overlap
-- 向量化：本地 Ollama embedding（`nomic-embed-text`）
-- 向量库：Chroma 本地持久化
-- 检索问答：Top-K 检索 + 本地 Ollama 回答（`llama3`）
-- 引用来源：返回 `chunk_id/title/source_path/distance`
+- Document ingestion: TXT / MD / PDF / DOCX
+- Text chunking: chunk + overlap
+- Embeddings: local Ollama embedding model (`nomic-embed-text`)
+- Vector store: local persistent Chroma DB
+- Retrieval QA: Top-K retrieval + local Ollama generation (`llama3`)
+- Citations: returns `chunk_id/title/source_path/distance`
 
 ---
 
-## 1. 当前目录结构（核心）
+## 1) Current Project Structure (Core)
 
 ```txt
 app/
@@ -30,7 +30,7 @@ data/
 
 ---
 
-## 2. 环境准备
+## 2) Environment Setup
 
 ```bash
 cd /Users/hailiu/Desktop/private_assistant
@@ -42,7 +42,7 @@ pip install chromadb requests
 
 ---
 
-## 3. 本地模型准备（Ollama）
+## 3) Local Model Setup (Ollama)
 
 ```bash
 brew install ollama
@@ -51,13 +51,13 @@ ollama pull nomic-embed-text
 ollama pull llama3
 ```
 
-> `nomic-embed-text` 用于 embedding，`llama3` 用于回答生成。
+> `nomic-embed-text` is used for embeddings, `llama3` is used for answer generation.
 
 ---
 
-## 4. 运行步骤
+## 4) Run Steps
 
-### Step A: 文档解析自测
+### Step A: Ingestion self-test
 
 ```bash
 cd /Users/hailiu/Desktop/private_assistant
@@ -65,7 +65,7 @@ source .venv/bin/activate
 PYTHONPATH=. python scripts/test_ingest.py
 ```
 
-### Step B: 建立/重建索引
+### Step B: Build / Rebuild index
 
 ```bash
 cd /Users/hailiu/Desktop/private_assistant
@@ -74,7 +74,7 @@ rm -rf data/chroma
 PYTHONPATH=. python scripts/test_index.py
 ```
 
-### Step C: 交互式对话（可自由输入问题）
+### Step C: Interactive QA (free input)
 
 ```bash
 cd /Users/hailiu/Desktop/private_assistant
@@ -82,118 +82,118 @@ source .venv/bin/activate
 PYTHONPATH=. python scripts/test_query.py
 ```
 
-输入 `exit` / `quit` / `q` 退出。
+Type `exit` / `quit` / `q` to quit.
 
 ---
 
-## 5. 当前问答输出格式
+## 5) Current QA Output Format
 
-系统会返回：
+The system returns:
 
-- `answer`: 回答内容
-- `sources`: 命中来源列表
+- `answer`: generated answer
+- `sources`: matched source list
   - `chunk_id`
   - `title`
   - `source_path`
   - `distance`
 
-这保证回答可追溯（citation）。
+This ensures answer traceability (citation).
 
 ---
 
-## 6. 常见问题
+## 6) Common Issues
 
 ### Q1. `No module named 'app'`
-在项目根目录运行，并带上：
+Run from project root and include:
 
 ```bash
 PYTHONPATH=. python scripts/test_xxx.py
 ```
 
 ### Q2. `Collection expecting embedding with dimension ...`
-索引和查询使用了不同 embedding 模型/维度。处理方式：
+Index and query are using different embedding models/dimensions. Fix by:
 
-1. 保证 `test_index.py` 和 `test_query.py` 都使用同一个 `get_embedding`
-2. 删除旧索引后重建：`rm -rf data/chroma && python scripts/test_index.py`
+1. Ensure both `test_index.py` and `test_query.py` use the same `get_embedding`
+2. Delete old index and rebuild: `rm -rf data/chroma && python scripts/test_index.py`
 
-### Q3. 文档变了要不要重建？
-当前版本建议重跑索引（至少对变更文档重建）。
-
----
-
-## 7. Week 1 已完成项（文档主链路）
-
-- [x] 初始化项目骨架
-- [x] 文档读取（PDF/DOCX/TXT/MD）
-- [x] chunk + metadata
-- [x] embedding + 向量入库
-- [x] 基础检索 + 问答
-- [x] citation 输出
-
-下一个阶段：邮件接入（只读最近 90 天）+ 增量更新。
+### Q3. Should I rebuild if documents changed?
+For the current version, yes—re-index after document changes (at least for changed files).
 
 ---
 
-## 8. 四周计划（保留原始规划）
+## 7) Week 1 Completed Items (Document RAG Pipeline)
+
+- [x] Initialize project skeleton
+- [x] Document parsing (PDF/DOCX/TXT/MD)
+- [x] Chunking + metadata
+- [x] Embedding + vector upsert
+- [x] Basic retrieval + QA
+- [x] Citation output
+
+Next stage: email ingestion (read-only last 90 days) + incremental updates.
+
+---
+
+## 8) Four-Week Plan (Original Plan Kept)
 
 > Start date: 2026-03-10  
 > Duration: 4 weeks (30 days)  
-> Goal: 做出一个可用、可评估、可持续迭代的私人 AI 助理系统，不只是 demo。
+> Goal: Build a usable, measurable, and continuously improvable private AI assistant system (not just a demo).
 
-### Week 1（Day 1-7）— 打地基：数据接入 + 可查询
-**交付物：能查到文档和邮件，返回带来源的答案**
+### Week 1 (Day 1-7) — Foundation: data access + queryability
+**Deliverable: searchable docs/emails with source-grounded answers**
 
-- [x] 初始化 repo（目录结构、requirements、env 示例）
-- [x] 文档解析模块：PDF/DOCX/TXT/MD
-- [ ] 邮件接入模块：先只读抓取最近 90 天
-- [x] chunk + embedding + 向量库入库
-- [x] 基础检索 + 问答（RAG v1）
-- [x] 返回 citation（文件名/路径/chunk 距离）
-- [x] 写 `ARCHITECTURE.md`（最小版）
+- [x] Initialize repo (structure, requirements, env template)
+- [x] Document parser module: PDF/DOCX/TXT/MD
+- [ ] Email ingestion module: read-only for last 90 days
+- [x] Chunk + embedding + vector indexing
+- [x] Basic retrieval + QA (RAG v1)
+- [x] Citation output (file path/chunk distance)
+- [x] `ARCHITECTURE.md` (minimal version)
 
-**验收标准（Week 1）**
-- [ ] 随机 20 个问题中，>=12 个回答可用且有来源
-- [x] 新增 1 个文件后可手动触发索引并被检索
+**Acceptance (Week 1)**
+- [ ] >= 12/20 random questions are usable and cited
+- [x] New file can be manually indexed and retrieved
 
-### Week 2（Day 8-14）— 增量更新 + 自动累计知识
-**交付物：系统可持续更新，不是一次性导入**
+### Week 2 (Day 8-14) — Incremental updates + accumulated knowledge
+**Deliverable: continuously updating system, not one-shot import**
 
-- [ ] 文件增量检测（mtime/hash）
-- [ ] 邮件增量拉取（按 UID / timestamp）
-- [ ] 每日知识汇总任务（新增内容 -> summary cards）
-- [ ] 记忆层设计：`raw_chunks` / `summaries` / `entities/topics`
-- [ ] 去重策略（内容 hash + 语义相似去重）
-- [ ] 失败重试 + 死信记录（最小版）
+- [ ] File change detection (mtime/hash)
+- [ ] Incremental email fetch (UID/timestamp)
+- [ ] Daily knowledge summary job (new content -> summary cards)
+- [ ] Memory layer design: `raw_chunks` / `summaries` / `entities/topics`
+- [ ] Dedup strategy (content hash + semantic dedup)
+- [ ] Retry + dead-letter handling (minimal)
 
-### Week 3（Day 15-21）— 质量评测 + Prompt/检索优化
-**交付物：可量化改进，不靠“感觉好用”**
+### Week 3 (Day 15-21) — Evaluation + prompt/retrieval optimization
+**Deliverable: measurable improvements, not just subjective feel**
 
-- [ ] 建立 50-100 条私有评测问答集
-- [ ] 指标：correctness / citation precision / hallucination / latency
-- [ ] 2 轮优化实验（chunk、top-k/rerank、prompt）
-- [ ] 输出 `EVAL_REPORT.md`（before vs after）
+- [ ] Build a 50-100 private QA evaluation set
+- [ ] Metrics: correctness / citation precision / hallucination / latency
+- [ ] Two optimization rounds (chunking, top-k/rerank, prompt)
+- [ ] `EVAL_REPORT.md` (before vs after)
 
-### Week 4（Day 22-30）— 工程化收尾 + 可演示版本
-**交付物：能展示给面试官的工程项目**
+### Week 4 (Day 22-30) — Engineering polish + demo-ready version
+**Deliverable: interview-ready engineering project**
 
-- [ ] FastAPI 服务化（/ask /ingest /health）
-- [ ] Docker 化，一条命令启动
-- [ ] 权限与隐私保护（本地优先、敏感字段脱敏）
-- [ ] 日志与成本追踪
-- [ ] README 完整化 + demo（可选）+ 面试讲稿
+- [ ] FastAPI service (`/ask`, `/ingest`, `/health`)
+- [ ] Dockerized one-command startup
+- [ ] Access/privacy controls (local-first, sensitive field masking)
+- [ ] Logging and cost tracking
+- [ ] Complete README + optional demo + interview story
 
 ---
 
-## 9. 每周执行节奏（原计划）
+## 9) Weekly Execution Rhythm (Original Plan)
 
-### 每周
-- [ ] 周一：定范围 + 风险
-- [ ] 周三：中期自测 + 砍 scope
-- [ ] 周五：验收 + 写周报
-- [ ] 周末：补文档 + 清理技术债
+### Every Week
+- [ ] Monday: define scope + risks
+- [ ] Wednesday: mid-week self-test + cut scope if needed
+- [ ] Friday: acceptance + weekly report
+- [ ] Weekend: docs update + tech debt cleanup
 
-### 每天（60-120 分钟）
-- [ ] 10 分钟：看昨天失败日志
-- [ ] 60-90 分钟：实现 1 个可验收小任务
-- [ ] 10 分钟：更新 TODO 勾选
-- [ ] 10 分钟：记录 learnings 到 `journal/`
+### Daily (60-120 mins)
+- [ ] 10 min: review yesterday's failure logs
+- [ ] 60-90 min: deliver one testable task
+- [ ] 10 min: update TODO checkboxes
+- [ ] 10 min: log learnings to `journal/`
