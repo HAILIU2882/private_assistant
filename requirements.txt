@@ -4,3 +4,4 @@ pypdf
 python-docx
 python-dotenv
 openai
+chromadb
