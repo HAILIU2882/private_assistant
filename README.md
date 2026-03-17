@@ -16,12 +16,14 @@ This repository contains your current working minimum RAG system (local document
 ```txt
 app/
   ingest/document_loader.py
+  ingest/email_loader.py
   retrieval/chunker.py
   retrieval/embedder.py
   retrieval/vector_store.py
   retrieval/rag.py
 scripts/
   test_ingest.py
+  test_email_ingest.py
   test_index.py
   test_query.py
 data/
@@ -62,7 +64,7 @@ ollama pull llama3
 ```bash
 cd /Users/hailiu/Desktop/private_assistant
 source .venv/bin/activate
-PYTHONPATH=. python scripts/test_ingest.py
+PYTHONPATH=. python3 scripts/test_ingest.py
 ```
 
 ### Step B: Build / Rebuild index
@@ -71,7 +73,7 @@ PYTHONPATH=. python scripts/test_ingest.py
 cd /Users/hailiu/Desktop/private_assistant
 source .venv/bin/activate
 rm -rf data/chroma
-PYTHONPATH=. python scripts/test_index.py
+PYTHONPATH=. python3 scripts/test_index.py
 ```
 
 ### Step C: Interactive QA (free input)
@@ -79,10 +81,32 @@ PYTHONPATH=. python scripts/test_index.py
 ```bash
 cd /Users/hailiu/Desktop/private_assistant
 source .venv/bin/activate
-PYTHONPATH=. python scripts/test_query.py
+PYTHONPATH=. python3 scripts/test_query.py
 ```
 
 Type `exit` / `quit` / `q` to quit.
+
+### Step D: Email ingestion self-test (read-only, last 90 days)
+
+Configure `.env` first:
+
+```env
+IMAP_HOST=imap.gmail.com
+IMAP_PORT=993
+IMAP_USER=your_email@example.com
+IMAP_PASSWORD=your_app_password
+IMAP_MAILBOX=INBOX
+EMAIL_LOOKBACK_DAYS=90
+EMAIL_FETCH_LIMIT=200
+```
+
+Then run:
+
+```bash
+cd /Users/hailiu/Desktop/private_assistant
+source .venv/bin/activate
+PYTHONPATH=. python3 scripts/test_email_ingest.py
+```
 
 ---
 
@@ -107,14 +131,14 @@ This ensures answer traceability (citation).
 Run from project root and include:
 
 ```bash
-PYTHONPATH=. python scripts/test_xxx.py
+PYTHONPATH=. python3 scripts/test_xxx.py
 ```
 
 ### Q2. `Collection expecting embedding with dimension ...`
 Index and query are using different embedding models/dimensions. Fix by:
 
 1. Ensure both `test_index.py` and `test_query.py` use the same `get_embedding`
-2. Delete old index and rebuild: `rm -rf data/chroma && python scripts/test_index.py`
+2. Delete old index and rebuild: `rm -rf data/chroma && python3 scripts/test_index.py`
 
 ### Q3. Should I rebuild if documents changed?
 For the current version, yes—re-index after document changes (at least for changed files).
@@ -125,6 +149,7 @@ For the current version, yes—re-index after document changes (at least for cha
 
 - [x] Initialize project skeleton
 - [x] Document parsing (PDF/DOCX/TXT/MD)
+- [x] Email ingestion module (IMAP read-only, last 90 days)
 - [x] Chunking + metadata
 - [x] Embedding + vector upsert
 - [x] Basic retrieval + QA
@@ -145,7 +170,7 @@ Next stage: email ingestion (read-only last 90 days) + incremental updates.
 
 - [x] Initialize repo (structure, requirements, env template)
 - [x] Document parser module: PDF/DOCX/TXT/MD
-- [ ] Email ingestion module: read-only for last 90 days
+- [x] Email ingestion module: read-only for last 90 days
 - [x] Chunk + embedding + vector indexing
 - [x] Basic retrieval + QA (RAG v1)
 - [x] Citation output (file path/chunk distance)
